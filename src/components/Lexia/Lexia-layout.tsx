@@ -16,11 +16,11 @@ export default function DocuChatLayout() {
   type DocumentsResponse = { ok: boolean; files: ServerDoc[] };
 
   type UiDoc = {
-    id: string;
+    id?: string;
     name: string;
-    status: 'ready' | 'uploading' | 'error';
-    progress: number;
-    content: string;
+    status?: 'ready' | 'uploading' | 'error';
+    progress?: number;
+    content?: string;
   };
   useEffect(() => {
   let cancelled = false;
@@ -30,6 +30,8 @@ export default function DocuChatLayout() {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const data: DocumentsResponse = await response.json();
+
+      // console.log(data);
       const docs = Array.isArray(data?.files) ? data.files : [];
 
       const existingDocs: UiDoc[] = docs.map(d => ({
