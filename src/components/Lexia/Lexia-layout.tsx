@@ -26,28 +26,34 @@ export default function DocuChatLayout() {
   let cancelled = false;
   const fetchExistingDocuments = async () => {
     try {
+      // const response = {count:2, files:["rajat.pdf", "gupta.pdf"]};
       const response = await fetch('http://localhost:8000/documents');
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const data: DocumentsResponse = await response.json();
+      // const data: any = response;
 
       // console.log(data);
       const docs = Array.isArray(data?.files) ? data.files : [];
 
-      const existingDocs: UiDoc[] = docs.map(d => ({
-        id: d.doc_id,                 // use stable backend id
-        name: d.title || d.doc_id,    // fallback if title missing
-        status: 'ready',
-        progress: 100,
-        content: '',
-      }));
+      const existingDocs: any = data.files.map((fl:any)=>{
+        return {name:fl};
+      });
+      // const existingDocs: UiDoc[] = docs.map(d => ({
+      //   id: d.doc_id,                 // use stable backend id
+      //   name: d.title || d.doc_id,    // fallback if title missing
+      //   status: 'ready',
+      //   progress: 100,
+      //   content: '',
+      // }));
 
       if (!cancelled) {
         // If you want to preserve any in-flight uploads, merge by id:
         setDocuments(prev => {
-          const byId = new Map(prev.map(p => [p.id, p]));
-          for (const doc of existingDocs) byId.set(doc.id, { ...(byId.get(doc.id) ?? doc), ...doc });
-          return Array.from(byId.values());
+          // const byId = new Map(prev.map(p => [p.id, p]));
+          // for (const doc of existingDocs) byId.set(doc.id, { ...(byId.get(doc.id) ?? doc), ...doc });
+          // return Array.from(byId.values());
+          return existingDocs;
         });
       }
     } catch (error) {
@@ -65,11 +71,11 @@ export default function DocuChatLayout() {
   };
 
   type Document = {
-  id: string;
+  id?: string;
   name: string;
-  content: string;
-  status: 'uploading' | 'ingesting' | 'ready' | 'error';
-  progress: number;
+  content?: string;
+  status?: 'uploading' | 'ingesting' | 'ready' | 'error';
+  progress?: number;
 };
 
 const handleFileUpload = async (file: File) => {
@@ -93,7 +99,7 @@ const handleFileUpload = async (file: File) => {
     progressInterval = window.setInterval(() => {
       setDocuments(prev =>
         prev.map(d =>
-          d.id === id ? { ...d, progress: Math.min(d.progress + 10, 90) } : d
+          d.id === id ? { ...d, progress: Math.min(d?.progress??0 + 10, 90) } : d
         )
       );
     }, 200);

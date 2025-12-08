@@ -4,7 +4,7 @@ import { DocumentList } from './document-list';
 import { FileText, Settings } from 'lucide-react';
 
 interface DocumentPaneProps {
-  documents: Document[];
+  documents: any[];
   onFileUpload: (file: File) => void;
   onRemoveDocument: (id: string) => void;
   theme: 'dark' | 'light';
