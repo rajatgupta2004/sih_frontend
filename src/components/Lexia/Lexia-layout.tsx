@@ -172,6 +172,101 @@ const handleFileUpload = async (file: File) => {
     if (progressInterval) window.clearInterval(progressInterval);
   }
 };
+const handleAudioFileUpload = async (file: File) => {
+  const id = crypto.randomUUID();
+  const newDoc: Document = {
+    id,
+    name: file.name,
+    content: '',
+    status: 'uploading',
+    progress: 0,
+  };
+  setDocuments(prev => [...prev, newDoc]);
+
+  const formData = new FormData();
+  formData.append('file', file);
+
+  let progressInterval: number | undefined;
+
+  try {
+    // Simulated progress while uploading
+    progressInterval = window.setInterval(() => {
+      setDocuments(prev =>
+        prev.map(d =>
+          d.id === id ? { ...d, progress: Math.min(d?.progress??0 + 10, 90) } : d
+        )
+      );
+    }, 200);
+
+    // --- /upload ---
+    const uploadRes = await fetch('http://localhost:8000/ingest/audio', {
+      method: 'POST',
+      body: formData,
+    });
+
+    let uploadJson: any = null;
+
+    try {
+      uploadJson = await uploadRes.json();
+    } catch {
+      /* no-op */
+    }
+
+    if (!uploadRes.ok) {
+      const detail = uploadJson?.fileName || uploadJson?.message || `HTTP ${uploadRes.status}`;
+      throw new Error(`Upload failed: ${detail}`);
+    }
+
+    const serverFilename: string = uploadJson?.filename ?? file.name;
+
+    // Move to ingesting
+    if (progressInterval) window.clearInterval(progressInterval);
+    setDocuments(prev =>
+      prev.map(d => (d.id === id ? { ...d, status: 'ingesting', progress: 95, name: serverFilename } : d))
+    );
+
+  //   // --- /ingest ---
+  //   const ingestRes = await fetch('http://localhost:8000/ingest', { method: 'POST' });
+
+  //   let ingestJson: any = null;
+  //   try {
+  //     ingestJson = await ingestRes.json();
+  //   } catch {
+  //     /* no-op */
+  //   }
+
+  //   if (!ingestRes.ok) {
+  //     const detail = ingestJson?.detail || ingestJson?.error || `HTTP ${ingestRes.status}`;
+  //     throw new Error(`Ingest failed: ${detail}`);
+  //   }
+
+  //   const ingested: string[] = Array.isArray(ingestJson?.ingested_files) ? ingestJson.ingested_files : [];
+  //   // Determine this file’s ingest result
+  //   const thisEntry = ingested.find(n => n.startsWith(serverFilename));
+  //   const failed = thisEntry?.includes('(FAILED:');
+
+  //   if (failed || !thisEntry) {
+  //     // Mark error for this file
+  //     setDocuments(prev =>
+  //       prev.map(d => (d.id === id ? { ...d, status: 'error', progress: 0 } : d))
+  //     );
+  //     return;
+  //   }
+
+  //   // Success -> mark ready
+  //   setDocuments(prev =>
+  //     prev.map(d => (d.id === id ? { ...d, content: '', status: 'ready', progress: 100 } : d))
+  //   );
+
+    }  catch (err) {
+    console.error('Error uploading or ingesting:', err);
+    setDocuments(prev =>
+      prev.map(d => (d.id === id ? { ...d, status: 'error', progress: 0 } : d))
+    );
+  } finally {
+    if (progressInterval) window.clearInterval(progressInterval);
+  }
+};
 
   const handleRemoveDocument = (id: string) => {
     setDocuments(prev => prev.filter(d => d.id !== id));
@@ -235,6 +330,7 @@ const handleFileUpload = async (file: File) => {
       <DocumentPane 
         documents={documents}
         onFileUpload={handleFileUpload}
+        onAudioFileUpload={handleAudioFileUpload}
         onRemoveDocument={handleRemoveDocument}
         theme={theme}
         onThemeToggle={toggleTheme}

@@ -85,29 +85,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 "use client";
 
 import { useRef, useState, DragEvent, ChangeEvent } from 'react';
@@ -115,9 +92,10 @@ import { Upload } from 'lucide-react';
 
 interface DocumentUploaderProps {
   onFileUpload: (file: File) => void;
+  onAudioFileUpload: (file: File) => void;
 }
 
-export function DocumentUploader({ onFileUpload }: DocumentUploaderProps) {
+export function DocumentUploader({ onFileUpload ,onAudioFileUpload }: DocumentUploaderProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
 
@@ -134,13 +112,20 @@ export function DocumentUploader({ onFileUpload }: DocumentUploaderProps) {
     const isAudio =
       file.type.startsWith('audio/') ||
       ['audio/mpeg', 'audio/wav', 'audio/mp4', 'audio/x-m4a'].includes(file.type);
+      
 
     if (!isTextOrPdf && !isAudio) {
       alert('Please upload a PDF, text, or audio file.');
       return;
     }
 
-    onFileUpload(file);
+    if(isTextOrPdf){
+      onFileUpload(file);
+
+    }else {
+      onAudioFileUpload(file);
+    }
+
   };
 
   const handleDragEnter = (e: DragEvent<HTMLDivElement>) => {

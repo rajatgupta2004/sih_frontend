@@ -7,6 +7,7 @@ interface DocumentPaneProps {
   documents: any[];
   onFileUpload: (file: File) => void;
   onRemoveDocument: (id: string) => void;
+  onAudioFileUpload: (file: File) => void;
   theme: 'dark' | 'light';
   onThemeToggle: () => void;
 }
@@ -20,7 +21,7 @@ interface DocumentPaneProps {
 //   </button>
 // );
 
-export function DocumentPane({ documents, onFileUpload, onRemoveDocument, theme, onThemeToggle }: DocumentPaneProps) {
+export function DocumentPane({ documents, onFileUpload, onAudioFileUpload, onRemoveDocument, theme, onThemeToggle }: DocumentPaneProps) {
   return (
     <div className="w-80 border-r border-white/10 bg-black/20 backdrop-blur-xl flex flex-col">
       {/* Header */}
@@ -43,7 +44,7 @@ export function DocumentPane({ documents, onFileUpload, onRemoveDocument, theme,
 
       {/* Upload Section */}
       <div className="p-4">
-        <DocumentUploader onFileUpload={onFileUpload} />
+        <DocumentUploader onFileUpload={onFileUpload} onAudioFileUpload={onAudioFileUpload}/>
       </div>
 
       {/* Document List */}
