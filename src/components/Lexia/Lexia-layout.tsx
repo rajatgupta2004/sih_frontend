@@ -243,7 +243,7 @@ const handleFileUpload = async (file: File) => {
         messages={messages}
         isLoading={isLoading}
         onSendQuestion={handleSendQuestion}
-        documentsReady={documents.some(d => d.status === 'ready')}
+        documentsReady={true}
       />
     </div>
   );
