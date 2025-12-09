@@ -10,6 +10,9 @@ interface ChatMessagesProps {
 }
 
 export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
+
+
+  console.log(messages);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,13 +48,27 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
                 <MessageCircle className="w-4 h-4 text-white/70" />
               </div>
             )}
-            
-            <div className={`max-w-2xl px-4 py-3 rounded-lg backdrop-blur-sm border ${
-              message.role === 'user' 
-                ? 'bg-white/10 border-white/20 text-white/90' 
+
+            <div className={`max-w-2xl px-4 py-3 rounded-lg backdrop-blur-sm border ${message.role === 'user'
+                ? 'bg-white/10 border-white/20 text-white/90'
                 : 'bg-white/5 border-white/10 text-white/80'
-            }`}>
+              }`}>
               <p className="leading-relaxed whitespace-pre-wrap text-sm">{message.content}</p>
+
+
+              {/* testing */}
+              {message.sources && message.sources.length > 0 && (
+                <div className="mt-3 border-t border-white/10 pt-2 text-xs text-white/50">
+                  <p className="mb-1">Sources:</p>
+                  {message.sources.map((src, i) => (
+                    <p key={i} className="truncate">
+                      • {src.file_name}
+                    </p>
+                  ))}
+                </div>
+              )}
+
+              {/* testing */}
             </div>
 
             {message.role === 'user' && (

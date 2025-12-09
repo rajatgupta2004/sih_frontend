@@ -113,7 +113,6 @@ const handleFileUpload = async (file: File) => {
         )
       );
     }, 200);
-
     // --- /upload ---
     const uploadRes = await fetch('http://localhost:8000/ingest', {
       method: 'POST',
@@ -294,7 +293,6 @@ const handleAudioFileUpload = async (file: File) => {
   const userMessage: Message = { id: messageId, content: question, role: 'user' };
   setMessages(prev => [...prev, userMessage]);
   setIsLoading(true);
-
   try {
     const response = await fetch('http://localhost:8000/query', {
       method: 'POST',
@@ -321,8 +319,9 @@ const handleAudioFileUpload = async (file: File) => {
       (data && typeof data.answer === 'string' && data.answer.trim()) ||
       'No answer found.';
 
+      const topSources = data.sources?.slice(0, 2);
     // 2) Add assistant message with ONLY the answer text
-    const aiMessage: Message = { id: crypto.randomUUID(), content: answer, role: 'assistant' };
+    const aiMessage: Message = { id: crypto.randomUUID(), content: answer, role: 'assistant' ,  sources: topSources  };
     setMessages(prev => [...prev, aiMessage]);
   } catch (error: any) {
     console.error('Error sending chat message:', error);
