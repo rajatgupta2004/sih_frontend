@@ -5,7 +5,7 @@ export async function answerQuestions({
   question: string;
   documentContent: string;
 }) {
-  const res = await fetch("http://localhost:8000/query", {
+  const res = await fetch("http://172.20.10.4:8000/query", {
     method: "GET",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ question, document_content: documentContent }),

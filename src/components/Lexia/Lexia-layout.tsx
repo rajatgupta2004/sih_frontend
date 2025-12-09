@@ -27,7 +27,7 @@ export default function DocuChatLayout() {
   const fetchExistingDocuments = async () => {
     try {
       // const response = {count:2, files:["rajat.pdf", "gupta.pdf"]};
-      const response = await fetch('http://localhost:8000/documents');
+      const response = await fetch('http://172.20.10.4:8000/documents');
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
       const data: DocumentsResponse = await response.json();
@@ -114,7 +114,7 @@ const handleFileUpload = async (file: File) => {
       );
     }, 200);
     // --- /upload ---
-    const uploadRes = await fetch('http://localhost:8000/ingest', {
+    const uploadRes = await fetch('http://172.20.10.4:8000/ingest', {
       method: 'POST',
       body: formData,
     });
@@ -140,7 +140,7 @@ const handleFileUpload = async (file: File) => {
     );
 
     // --- /ingest ---
-    const ingestRes = await fetch('http://localhost:8000/ingest', { method: 'POST' });
+    const ingestRes = await fetch('http://172.20.10.4:8000/ingest', { method: 'POST' });
 
     let ingestJson: any = null;
     try {
@@ -213,7 +213,7 @@ const handleAudioFileUpload = async (file: File) => {
     }, 200);
 
     // --- /upload ---
-    const uploadRes = await fetch('http://localhost:8000/ingest/audio', {
+    const uploadRes = await fetch('http://172.20.10.4:8000/ingest/audio', {
       method: 'POST',
       body: formData,
     });
@@ -240,7 +240,7 @@ const handleAudioFileUpload = async (file: File) => {
     );
 
   //   // --- /ingest ---
-  //   const ingestRes = await fetch('http://localhost:8000/ingest', { method: 'POST' });
+  //   const ingestRes = await fetch('http://172.20.10.4:8000/ingest', { method: 'POST' });
 
   //   let ingestJson: any = null;
   //   try {
@@ -282,6 +282,74 @@ const handleAudioFileUpload = async (file: File) => {
   }
 };
 
+
+
+const handleImageFileUpload = async (file: File) => {
+    // 🛑 Prevent duplicates
+    if (fileExists(file.name)) {
+      console.warn("Duplicate image file skipped:", file.name);
+      return;
+    }
+    const id = crypto.randomUUID();
+    const newDoc: Document = {
+      id,
+      name: file.name,
+      content: '',
+      status: 'uploading',
+      progress: 0,
+    };
+    setDocuments(prev => [...prev, newDoc]);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    let progressInterval: number | undefined;
+
+    try {
+      // Simulated progress
+      progressInterval = window.setInterval(() => {
+        setDocuments(prev =>
+          prev.map(d =>
+            d.id === id ? { ...d, progress: Math.min((d?.progress ?? 0) + 10, 90) } : d
+          )
+        );
+      }, 200);
+
+      // --- HIT THE IMAGE ENDPOINT ---
+      const uploadRes = await fetch('http://172.20.10.4:8000/ingest/image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      let uploadJson: any = null;
+      try {
+        uploadJson = await uploadRes.json();
+      } catch { /* no-op */ }
+
+      if (!uploadRes.ok) {
+        const detail = uploadJson?.fileName || uploadJson?.message || `HTTP ${uploadRes.status}`;
+        throw new Error(`Upload failed: ${detail}`);
+      }
+
+      const serverFilename: string = uploadJson?.filename ?? file.name;
+
+      if (progressInterval) window.clearInterval(progressInterval);
+      
+      // Success -> mark ready
+      setDocuments(prev =>
+        prev.map(d => (d.id === id ? { ...d, status: 'ready', progress: 100, name: serverFilename } : d))
+      );
+
+    } catch (err) {
+      console.error('Error uploading image:', err);
+      setDocuments(prev =>
+        prev.map(d => (d.id === id ? { ...d, status: 'error', progress: 0 } : d))
+      );
+    } finally {
+      if (progressInterval) window.clearInterval(progressInterval);
+    }
+  };
+
   const handleRemoveDocument = (id: string) => {
     setDocuments(prev => prev.filter(d => d.id !== id));
   };
@@ -294,7 +362,7 @@ const handleAudioFileUpload = async (file: File) => {
   setMessages(prev => [...prev, userMessage]);
   setIsLoading(true);
   try {
-    const response = await fetch('http://localhost:8000/query', {
+    const response = await fetch('http://172.20.10.4:8000/query', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       // You can add k/mode if you expose UI controls; keeping simple here
@@ -346,6 +414,7 @@ const handleAudioFileUpload = async (file: File) => {
         onFileUpload={handleFileUpload}
         onAudioFileUpload={handleAudioFileUpload}
         onRemoveDocument={handleRemoveDocument}
+        onImageFileUpload={handleImageFileUpload}
         theme={theme}
         onThemeToggle={toggleTheme}
       />

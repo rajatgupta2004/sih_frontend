@@ -78,7 +78,7 @@ export function ChatMessages({ messages, isLoading }: ChatMessagesProps) {
             )}
           </div>
         ))}
-
+        
         {isLoading && (
           <div className="flex gap-4 justify-start">
             <div className="w-8 h-8 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/10 flex-shrink-0">
