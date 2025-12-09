@@ -77,9 +77,6 @@ export function ChatInput({ onSend, isLoading, documentsReady }: ChatInputProps)
 
 
 
-
-
-
 // "use client";
 
 // import { useState, useRef, KeyboardEvent } from "react";

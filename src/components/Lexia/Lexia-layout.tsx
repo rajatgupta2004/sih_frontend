@@ -78,7 +78,17 @@ export default function DocuChatLayout() {
   progress?: number;
 };
 
+const fileExists = (name: string) => {
+  return documents.some(doc => doc.name.toLowerCase() === name.toLowerCase());
+};
+
+
 const handleFileUpload = async (file: File) => {
+  if (fileExists(file.name)) {
+    console.warn("Duplicate file skipped:", file.name);
+    return;
+  }
+
   const id = crypto.randomUUID();
   const newDoc: Document = {
     id,
@@ -173,6 +183,11 @@ const handleFileUpload = async (file: File) => {
   }
 };
 const handleAudioFileUpload = async (file: File) => {
+  // 🛑 Prevent duplicates
+  if (fileExists(file.name)) {
+    console.warn("Duplicate audio file skipped:", file.name);
+    return;
+  }
   const id = crypto.randomUUID();
   const newDoc: Document = {
     id,
